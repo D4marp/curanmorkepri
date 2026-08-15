@@ -12,6 +12,8 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+
+	"curanmor-ai/internal/auth"
 )
 
 // Connect membuka connection pool ke PostgreSQL dengan retry, karena pada
@@ -122,6 +124,44 @@ func RunSeedIfEmpty(dbConn *sql.DB, seedDir string) error {
 			return fmt.Errorf("gagal eksekusi seed %s: %w", f, err)
 		}
 		log.Printf("[db] seed diterapkan: %s", filepath.Base(f))
+	}
+
+	if err := applySeedAdminOverride(dbConn); err != nil {
+		return err
+	}
+	return nil
+}
+
+// applySeedAdminOverride mengganti NRP & password akun Super Admin pertama
+// (dibuat oleh scripts/02_seed_rbac.sql dengan NRP tetap "00000000") memakai
+// SEED_ADMIN_NRP / SEED_ADMIN_PASSWORD dari environment, bila di-set. Tanpa
+// ini operator tidak pernah tahu kredensial awal selain dari kode sumber —
+// dengan override, kredensial pertama ditentukan lewat .env deployment
+// masing-masing, bukan nilai default yang sama di semua instalasi.
+func applySeedAdminOverride(dbConn *sql.DB) error {
+	nrp := os.Getenv("SEED_ADMIN_NRP")
+	password := os.Getenv("SEED_ADMIN_PASSWORD")
+	if nrp == "" && password == "" {
+		return nil
+	}
+	if nrp == "" || password == "" {
+		return fmt.Errorf("SEED_ADMIN_NRP dan SEED_ADMIN_PASSWORD harus diisi berdua atau dikosongkan berdua")
+	}
+
+	hash, err := auth.HashPassword(password)
+	if err != nil {
+		return fmt.Errorf("gagal hash SEED_ADMIN_PASSWORD: %w", err)
+	}
+
+	res, err := dbConn.Exec(`
+		UPDATE pengguna SET nrp = $1, password_hash = $2
+		WHERE nrp = '00000000'
+	`, nrp, hash)
+	if err != nil {
+		return fmt.Errorf("gagal terapkan SEED_ADMIN_NRP/SEED_ADMIN_PASSWORD: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n > 0 {
+		log.Printf("[db] kredensial Super Admin awal diganti sesuai SEED_ADMIN_NRP dari .env")
 	}
 	return nil
 }

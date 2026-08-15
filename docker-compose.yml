@@ -33,6 +33,8 @@ services:
       JWT_ISSUER: ${JWT_ISSUER:-curanmor-ai.polda-kepri.go.id}
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?wajib diisi di .env — minimal 32 karakter acak}
       ACCESS_TOKEN_TTL_MINUTES: ${ACCESS_TOKEN_TTL_MINUTES:-60}
+      SEED_ADMIN_NRP: ${SEED_ADMIN_NRP:-}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
       MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-10}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
