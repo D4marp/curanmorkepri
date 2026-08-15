@@ -1,0 +1,962 @@
+openapi: 3.0.3
+info:
+  title: CURANMOR AI — Ditreskrimum Polda Kepulauan Riau
+  description: >
+    Database Curanmor Online — API untuk dashboard web (input & pencarian data)
+    dan integrasi chatbot WhatsApp AI (grup `/api/v1/wa/*`, otentikasi API key).
+    Seluruh response menggunakan amplop standar `{ success, data, error, meta }`.
+  version: "1.0.0"
+  contact:
+    name: Ditreskrimum Polda Kepulauan Riau
+servers:
+  - url: /
+    description: Server saat ini
+
+tags:
+  - name: Auth
+  - name: Satuan Kerja
+  - name: RBAC
+  - name: Pengguna
+  - name: Whitelist WhatsApp
+  - name: API Keys
+  - name: Laporan Polisi
+  - name: Kendaraan
+  - name: Pihak Terkait
+  - name: Barang Bukti
+  - name: Dokumentasi
+  - name: Riwayat Penyidikan
+  - name: Dashboard
+  - name: Notifikasi
+  - name: Laporan Periodik
+  - name: Audit Log
+  - name: Upload
+  - name: "WA Integration (API Key)"
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: curanmor_token
+      description: JWT sesi dashboard, diset otomatis saat login (httpOnly cookie).
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Alternatif cookieAuth — kirim token JWT hasil login sebagai header Authorization: Bearer <token>."
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Kredensial layanan chatbot WhatsApp AI (lihat modul Pengaturan Sistem → API Keys).
+
+  schemas:
+    Envelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: {}
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+        meta: {}
+
+    SatuanKerja:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        kode_satker: { type: string }
+        nama_satker: { type: string }
+        jenis_satker: { type: string, enum: [Polda, Polres, Polsek] }
+        induk_id: { type: integer, format: int64, nullable: true }
+        wilayah: { type: string }
+        alamat: { type: string }
+        created_at: { type: string, format: date-time }
+
+    Peran:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        nama_peran: { type: string }
+        deskripsi: { type: string }
+
+    Pengguna:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        nrp: { type: string }
+        nama_lengkap: { type: string }
+        pangkat: { type: string }
+        jabatan: { type: string }
+        peran_id: { type: integer, format: int64 }
+        peran_nama: { type: string }
+        satker_id: { type: integer, format: int64 }
+        satker_nama: { type: string }
+        no_whatsapp: { type: string, nullable: true }
+        status_aktif: { type: boolean }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    LaporanPolisi:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        no_lp: { type: string, example: "LP/0001/08/2026/KEPRI" }
+        tanggal_lp: { type: string, format: date }
+        jenis_perkara: { type: string, enum: [Pencurian Ranmor, Penggelapan, Penadahan, Lainnya] }
+        satker_id: { type: integer, format: int64 }
+        satker_nama: { type: string }
+        penyidik_id: { type: integer, format: int64, nullable: true }
+        tanggal_kejadian: { type: string, format: date, nullable: true }
+        tkp_alamat: { type: string }
+        tkp_latitude: { type: number, format: double, nullable: true }
+        tkp_longitude: { type: number, format: double, nullable: true }
+        status_kasus: { type: string, enum: [LP, SP2HP, DPO, Selesai] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    Kendaraan:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        lp_id: { type: integer, format: int64 }
+        no_polisi: { type: string, example: "BP1234AB" }
+        no_rangka_vin: { type: string }
+        no_mesin: { type: string }
+        merk_tipe: { type: string, example: "Honda Beat" }
+        warna: { type: string }
+        tahun: { type: integer, nullable: true }
+        jenis_kendaraan: { type: string, enum: [Roda 2, Roda 4, Lainnya] }
+        status_kendaraan: { type: string, enum: [Terlapor Hilang, Ditemukan, Diamankan, Dikembalikan] }
+        foto_kendaraan_url: { type: string }
+
+    PihakTerkait:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        lp_id: { type: integer, format: int64 }
+        jenis_pihak: { type: string, enum: [Pelapor, Terlapor, Saksi] }
+        nama: { type: string }
+        nik:
+          type: string
+          description: HANYA dikirim saat create/update (write-only, plaintext); dienkripsi AES-256-GCM at-rest & tidak pernah dikembalikan utuh.
+        nik_masked: { type: string, example: "3271********0001", readOnly: true }
+        alamat: { type: string }
+        no_telp: { type: string }
+
+    BarangBukti:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        lp_id: { type: integer, format: int64 }
+        jenis_bb: { type: string }
+        no_registrasi_bb: { type: string }
+        deskripsi: { type: string }
+        lokasi_penyimpanan: { type: string }
+        foto_bb_url: { type: string }
+        tanggal_diamankan: { type: string, format: date, nullable: true }
+
+    DashboardRingkasan:
+      type: object
+      properties:
+        total_kasus: { type: integer }
+        kasus_selesai: { type: integer }
+        kasus_belum_terungkap: { type: integer }
+        kendaraan_ditemukan: { type: integer }
+        kendaraan_belum_ditemukan: { type: integer }
+
+    PetaSebaranPoint:
+      type: object
+      properties:
+        lp_id: { type: integer, format: int64 }
+        no_lp: { type: string }
+        satker_id: { type: integer, format: int64 }
+        nama_satker: { type: string }
+        tanggal_kejadian: { type: string, format: date, nullable: true }
+        tkp_alamat: { type: string }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        status_kasus: { type: string }
+        sudah_terungkap: { type: boolean }
+
+  parameters:
+    IDPath:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, format: int64 }
+
+paths:
+  # ---------------- AUTH ----------------
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login dashboard (NRP + password)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nrp, password]
+              properties:
+                nrp: { type: string, example: "00000000" }
+                password: { type: string, format: password }
+      responses:
+        "200": { description: Login berhasil, cookie sesi diset, token JWT juga dikembalikan di body }
+        "401": { description: NRP atau password salah }
+        "429": { description: Terlalu banyak percobaan (rate limited) }
+
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (hapus cookie sesi)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+
+  /api/v1/auth/me:
+    get:
+      tags: [Auth]
+      summary: Profil pengguna yang sedang login
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+
+  /api/v1/auth/change-password:
+    post:
+      tags: [Auth]
+      summary: Ganti password sendiri
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password_lama: { type: string }
+                password_baru: { type: string, minLength: 10 }
+      responses:
+        "200": { description: OK }
+
+  # ---------------- SATUAN KERJA ----------------
+  /api/v1/satuan-kerja:
+    get:
+      tags: [Satuan Kerja]
+      summary: Daftar seluruh satuan kerja (Polda/Polres/Polsek)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/SatuanKerja" }
+    post:
+      tags: [Satuan Kerja]
+      summary: Buat satuan kerja baru (Super Admin — modul pengaturan_sistem)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SatuanKerja" }
+      responses:
+        "201": { description: Created }
+
+  /api/v1/satuan-kerja/{id}:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    get:
+      tags: [Satuan Kerja]
+      summary: Detail satuan kerja
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    put:
+      tags: [Satuan Kerja]
+      summary: Ubah satuan kerja (pengaturan_sistem)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    delete:
+      tags: [Satuan Kerja]
+      summary: Hapus satuan kerja (pengaturan_sistem)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  # ---------------- RBAC ----------------
+  /api/v1/peran:
+    get:
+      tags: [RBAC]
+      summary: Daftar peran (6 peran RBAC)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  /api/v1/modul-akses:
+    get:
+      tags: [RBAC]
+      summary: Daftar modul fungsional sistem
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  /api/v1/rbac/matriks:
+    get:
+      tags: [RBAC]
+      summary: Matriks hak akses peran x modul
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    put:
+      tags: [RBAC]
+      summary: Ubah level akses satu sel matriks (pengaturan_sistem)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                peran_id: { type: integer, format: int64 }
+                modul_id: { type: integer, format: int64 }
+                level_akses: { type: string, enum: [penuh, terbatas, ditolak] }
+      responses: { "200": { description: OK } }
+
+  # ---------------- PENGGUNA ----------------
+  /api/v1/pengguna:
+    get:
+      tags: [Pengguna]
+      summary: Daftar pengguna (di-scope sesuai satuan kerja — modul kelola_pengguna)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Pengguna]
+      summary: Buat pengguna baru
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nrp, nama_lengkap, peran_id, satker_id, password]
+              properties:
+                nrp: { type: string }
+                nama_lengkap: { type: string }
+                pangkat: { type: string }
+                jabatan: { type: string }
+                peran_id: { type: integer, format: int64 }
+                satker_id: { type: integer, format: int64 }
+                no_whatsapp: { type: string }
+                password: { type: string, minLength: 10 }
+      responses: { "201": { description: Created } }
+
+  /api/v1/pengguna/{id}:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    get:
+      tags: [Pengguna]
+      summary: Detail pengguna
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    put:
+      tags: [Pengguna]
+      summary: Ubah pengguna
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    delete:
+      tags: [Pengguna]
+      summary: Hapus pengguna
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  /api/v1/pengguna/{id}/reset-password:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    post:
+      tags: [Pengguna]
+      summary: Reset password anggota (oleh admin)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { password_baru: { type: string, minLength: 10 } }
+      responses: { "200": { description: OK } }
+
+  # ---------------- WHITELIST WHATSAPP ----------------
+  /api/v1/whitelist-whatsapp:
+    get:
+      tags: [Whitelist WhatsApp]
+      summary: Daftar nomor WA terdaftar
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Whitelist WhatsApp]
+      summary: Daftarkan nomor WA baru (kelola_pengguna)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                no_whatsapp: { type: string }
+                pengguna_id: { type: integer, format: int64 }
+      responses: { "201": { description: Created } }
+
+  /api/v1/whitelist-whatsapp/{id}/status:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    patch:
+      tags: [Whitelist WhatsApp]
+      summary: Ubah status (aktif/nonaktif/diblokir)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { status: { type: string, enum: [aktif, nonaktif, diblokir] } }
+      responses: { "200": { description: OK } }
+
+  /api/v1/whitelist-whatsapp/{id}:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    delete:
+      tags: [Whitelist WhatsApp]
+      summary: Hapus entri whitelist
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  # ---------------- API KEYS ----------------
+  /api/v1/api-keys:
+    get:
+      tags: [API Keys]
+      summary: Daftar API key layanan WA-bot (pengaturan_sistem)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    post:
+      tags: [API Keys]
+      summary: Buat API key baru (raw_key hanya ditampilkan sekali)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { nama_layanan: { type: string, example: "Chatbot WA Ditreskrimum" } }
+      responses: { "201": { description: Created } }
+
+  /api/v1/api-keys/{id}:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    delete:
+      tags: [API Keys]
+      summary: Cabut/nonaktifkan API key
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  # ---------------- LAPORAN POLISI ----------------
+  /api/v1/laporan:
+    get:
+      tags: [Laporan Polisi]
+      summary: Cari/daftar laporan polisi (rentang tanggal, wilayah, status, kata kunci)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      parameters:
+        - { name: dari, in: query, schema: { type: string, format: date }, description: "Filter tanggal_kejadian >= dari" }
+        - { name: sampai, in: query, schema: { type: string, format: date }, description: "Filter tanggal_kejadian <= sampai" }
+        - { name: satker_id, in: query, schema: { type: integer, format: int64 } }
+        - { name: status, in: query, schema: { type: string, enum: [LP, SP2HP, DPO, Selesai] } }
+        - { name: jenis_perkara, in: query, schema: { type: string } }
+        - { name: keyword, in: query, schema: { type: string }, description: "Cocok ke no_lp atau tkp_alamat" }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: page_size, in: query, schema: { type: integer, default: 25 } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/LaporanPolisi" }
+                  meta:
+                    type: object
+                    properties: { total: { type: integer }, page: { type: integer }, page_size: { type: integer } }
+    post:
+      tags: [Laporan Polisi]
+      summary: Buat laporan polisi baru (kelola_data)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LaporanPolisi" }
+      responses: { "201": { description: Created } }
+
+  /api/v1/laporan/{id}:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    get:
+      tags: [Laporan Polisi]
+      summary: Detail laporan (lengkap dengan kendaraan, pihak terkait, barang bukti, dokumentasi, riwayat)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    put:
+      tags: [Laporan Polisi]
+      summary: Ubah laporan
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    delete:
+      tags: [Laporan Polisi]
+      summary: Hapus laporan
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  /api/v1/laporan/{id}/status:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    patch:
+      tags: [Laporan Polisi]
+      summary: Ubah status kasus (LP → SP2HP → DPO → Selesai), otomatis tercatat di riwayat_status_kasus
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status_baru: { type: string, enum: [LP, SP2HP, DPO, Selesai] }
+                keterangan: { type: string }
+      responses: { "200": { description: OK } }
+
+  # ---------------- KENDARAAN ----------------
+  /api/v1/kendaraan/search:
+    get:
+      tags: [Kendaraan]
+      summary: Pencarian cepat kendaraan (sisi dashboard)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      parameters:
+        - { name: tipe, in: query, schema: { type: string, enum: ["No. Polisi", "No. Rangka", "No. Mesin"] } }
+        - { name: kata_kunci, in: query, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: "#/components/schemas/Kendaraan" } }
+
+  /api/v1/laporan/{id}/kendaraan:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    post:
+      tags: [Kendaraan]
+      summary: Tambah kendaraan ke laporan
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Kendaraan" }
+      responses: { "201": { description: Created } }
+
+  /api/v1/kendaraan/{id}:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    put:
+      tags: [Kendaraan]
+      summary: Ubah data kendaraan
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    delete:
+      tags: [Kendaraan]
+      summary: Hapus kendaraan
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  /api/v1/kendaraan/{id}/status:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    patch:
+      tags: [Kendaraan]
+      summary: Ubah status kendaraan (Terlapor Hilang/Ditemukan/Diamankan/Dikembalikan)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { status_kendaraan: { type: string } }
+      responses: { "200": { description: OK } }
+
+  # ---------------- PIHAK TERKAIT ----------------
+  /api/v1/laporan/{id}/pihak-terkait:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    post:
+      tags: [Pihak Terkait]
+      summary: Tambah pihak terkait (Pelapor/Terlapor/Saksi); NIK dienkripsi at-rest
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PihakTerkait" }
+      responses: { "201": { description: Created } }
+
+  /api/v1/pihak-terkait/{id}:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    put:
+      tags: [Pihak Terkait]
+      summary: Ubah pihak terkait
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    delete:
+      tags: [Pihak Terkait]
+      summary: Hapus pihak terkait
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  # ---------------- BARANG BUKTI ----------------
+  /api/v1/laporan/{id}/barang-bukti:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    post:
+      tags: [Barang Bukti]
+      summary: Tambah barang bukti
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BarangBukti" }
+      responses: { "201": { description: Created } }
+
+  /api/v1/barang-bukti/{id}:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    delete:
+      tags: [Barang Bukti]
+      summary: Hapus barang bukti
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  # ---------------- DOKUMENTASI ----------------
+  /api/v1/laporan/{id}/dokumentasi:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    post:
+      tags: [Dokumentasi]
+      summary: Tambah dokumentasi pendukung (STNK/BPKB/Foto TKP/dll — unggah file dahulu lewat /api/v1/uploads)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                jenis_dokumen: { type: string, enum: [STNK, BPKB, Foto TKP, Foto Rangka, Foto Mesin, Lainnya] }
+                file_url: { type: string }
+      responses: { "201": { description: Created } }
+
+  /api/v1/dokumentasi/{id}:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    delete:
+      tags: [Dokumentasi]
+      summary: Hapus dokumentasi
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  # ---------------- RIWAYAT PENYIDIKAN ----------------
+  /api/v1/laporan/{id}/riwayat-penyidikan:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    post:
+      tags: [Riwayat Penyidikan]
+      summary: Tambah jurnal kegiatan penyidikan
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tanggal: { type: string, format: date }
+                kegiatan: { type: string }
+                catatan: { type: string }
+      responses: { "201": { description: Created } }
+
+  /api/v1/riwayat-penyidikan/{id}:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    delete:
+      tags: [Riwayat Penyidikan]
+      summary: Hapus entri riwayat penyidikan
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  # ---------------- UPLOAD ----------------
+  /api/v1/uploads:
+    post:
+      tags: [Upload]
+      summary: Unggah berkas (foto/dokumen), mengembalikan URL untuk dipakai di entitas lain
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties: { file: { type: string, format: binary } }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { data: { type: object, properties: { url: { type: string } } } }
+
+  # ---------------- DASHBOARD ----------------
+  /api/v1/dashboard/ringkasan:
+    get:
+      tags: [Dashboard]
+      summary: Ringkasan total kasus & kendaraan (di-scope sesuai satuan kerja)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { data: { $ref: "#/components/schemas/DashboardRingkasan" } }
+
+  /api/v1/dashboard/peta-sebaran:
+    get:
+      tags: [Dashboard]
+      summary: Titik lokasi TKP untuk peta sebaran (belum/sudah terungkap)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      parameters:
+        - { name: dari, in: query, schema: { type: string, format: date } }
+        - { name: sampai, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: "#/components/schemas/PetaSebaranPoint" } }
+
+  /api/v1/dashboard/tren-bulanan:
+    get:
+      tags: [Dashboard]
+      summary: Tren jumlah kasus per bulan (modul laporan_analitik)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      parameters:
+        - { name: bulan, in: query, schema: { type: integer, default: 6 }, description: "N bulan terakhir" }
+      responses: { "200": { description: OK } }
+
+  /api/v1/dashboard/kategori-kasus:
+    get:
+      tags: [Dashboard]
+      summary: Distribusi kasus per jenis_perkara (modul laporan_analitik)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  # ---------------- NOTIFIKASI ----------------
+  /api/v1/notifikasi:
+    get:
+      tags: [Notifikasi]
+      summary: Daftar notifikasi/alert untuk pengguna saat ini
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  /api/v1/notifikasi/{id}/baca:
+    parameters: [{ $ref: "#/components/parameters/IDPath" }]
+    patch:
+      tags: [Notifikasi]
+      summary: Tandai notifikasi sudah dibaca
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  # ---------------- LAPORAN PERIODIK ----------------
+  /api/v1/laporan-periodik:
+    get:
+      tags: [Laporan Periodik]
+      summary: Daftar laporan harian/mingguan/bulanan (modul laporan_analitik)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Laporan Periodik]
+      summary: Buat entri laporan periodik manual
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                jenis_laporan: { type: string, enum: [Harian, Mingguan, Bulanan] }
+                periode_mulai: { type: string, format: date }
+                periode_selesai: { type: string, format: date }
+                satker_id: { type: integer, format: int64, nullable: true }
+                file_url: { type: string }
+      responses: { "201": { description: Created } }
+
+  # ---------------- AUDIT LOG ----------------
+  /api/v1/audit-log:
+    get:
+      tags: [Audit Log]
+      summary: Jejak audit seluruh aktivitas pengguna (modul laporan_analitik)
+      security: [{ cookieAuth: [] }, { bearerAuth: [] }]
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: page_size, in: query, schema: { type: integer, default: 100 } }
+      responses: { "200": { description: OK } }
+
+  # ---------------- WA INTEGRATION (API KEY) ----------------
+  /api/v1/wa/whitelist/check:
+    post:
+      tags: ["WA Integration (API Key)"]
+      summary: Cek apakah nomor WA diizinkan mengakses sistem (panggil SEBELUM memproses pesan)
+      security: [{ apiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { no_whatsapp: { type: string, example: "0812xxxx1008" } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      diizinkan: { type: boolean }
+                      pengguna_id: { type: integer, format: int64 }
+                      nama_lengkap: { type: string }
+                      peran_nama: { type: string }
+                      satker_nama: { type: string }
+                      alasan: { type: string }
+
+  /api/v1/wa/log-interaksi:
+    post:
+      tags: ["WA Integration (API Key)"]
+      summary: Catat pesan masuk dari petugas (teks/foto STNK/foto rangka/foto mesin/voice note)
+      security: [{ apiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                no_whatsapp: { type: string }
+                jenis_input: { type: string, enum: [Teks, Foto STNK, "Foto No. Mesin", "Foto No. Rangka", Voice Note, Foto Kendaraan] }
+                isi_pesan_masuk: { type: string }
+      responses: { "201": { description: Created } }
+    get:
+      tags: ["WA Integration (API Key)"]
+      summary: Riwayat log interaksi WA (untuk audit internal layanan chatbot)
+      security: [{ apiKeyAuth: [] }]
+      parameters:
+        - { name: no_whatsapp, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: page_size, in: query, schema: { type: integer, default: 50 } }
+      responses: { "200": { description: OK } }
+
+  /api/v1/wa/hasil-ocr:
+    post:
+      tags: ["WA Integration (API Key)"]
+      summary: Catat hasil OCR/speech-to-text/visual matching dari AI eksternal
+      security: [{ apiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                log_id: { type: integer, format: int64 }
+                jenis_proses: { type: string, enum: ["OCR Teks", "OCR Gambar", "Speech-to-Text", "Visual Matching"] }
+                teks_mentah: { type: string }
+                skor_keyakinan: { type: number, format: double, minimum: 0, maximum: 1 }
+                hasil_ekstraksi_json: { type: object }
+      responses: { "201": { description: Created } }
+
+  /api/v1/wa/search:
+    post:
+      tags: ["WA Integration (API Key)"]
+      summary: >
+        Jalur utama pencarian kendaraan curian dari WhatsApp — merespons cepat
+        (indeks pada no_polisi/no_rangka_vin/no_mesin). Otomatis mencatat
+        log_interaksi (bila log_id tidak disertakan) dan log_pencarian, serta
+        men-scope hasil sesuai satuan kerja pemilik nomor WA.
+      security: [{ apiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [no_whatsapp, kata_kunci]
+              properties:
+                no_whatsapp: { type: string }
+                log_id: { type: integer, format: int64, nullable: true }
+                tipe_pencarian: { type: string, enum: ["No. Polisi", "No. Rangka", "No. Mesin"], default: "No. Polisi" }
+                kata_kunci: { type: string, example: "BP1234AB" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      log_id: { type: integer, format: int64 }
+                      ditemukan: { type: boolean }
+                      waktu_respons_ms: { type: integer }
+                      hasil: { type: array, items: { $ref: "#/components/schemas/Kendaraan" } }
+        "403": { description: Nomor WA tidak terdaftar/tidak aktif di whitelist }
+
+  /api/v1/wa/respons:
+    post:
+      tags: ["WA Integration (API Key)"]
+      summary: Catat balasan yang dikirim AI ke WhatsApp petugas
+      security: [{ apiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                log_id: { type: integer, format: int64 }
+                isi_respons: { type: string }
+                status_pengiriman: { type: string, enum: [terkirim, gagal], default: terkirim }
+      responses: { "201": { description: Created } }

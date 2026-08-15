@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CURANMOR AI - Swagger UI Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #fafafa;
+            color: #333;
+        }
+        .topbar {
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .topbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .topbar h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .topbar-info {
+            display: flex;
+            gap: 30px;
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .swagger-header {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .swagger-header h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .swagger-header p {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .endpoints-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .endpoint-card {
+            background: white;
+            border-left: 4px solid #61affe;
+            border-radius: 4px;
+            padding: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .endpoint-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .endpoint-card.get { border-left-color: #61affe; }
+        .endpoint-card.post { border-left-color: #49cc90; }
+        .endpoint-card.put { border-left-color: #fca130; }
+        .endpoint-card.patch { border-left-color: #50e3c2; }
+        .endpoint-card.delete { border-left-color: #f93e3e; }
+        
+        .endpoint-method {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .endpoint-method.get { background: #61affe; color: white; }
+        .endpoint-method.post { background: #49cc90; color: white; }
+        .endpoint-method.put { background: #fca130; color: white; }
+        .endpoint-method.patch { background: #50e3c2; color: white; }
+        .endpoint-method.delete { background: #f93e3e; color: white; }
+        
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 3px;
+            margin: 8px 0;
+            word-break: break-all;
+            color: #333;
+        }
+        
+        .endpoint-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .tag-group {
+            margin-bottom: 40px;
+        }
+        
+        .tag-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        
+        .icon {
+            margin-right: 5px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .endpoints-grid { grid-template-columns: 1fr; }
+            .topbar-info { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-content">
+            <h1>🚔 CURANMOR AI - API Documentation</h1>
+            <div class="topbar-info">
+                <span><strong>Version:</strong> 1.0.0</span>
+                <span><strong>Total Endpoints:</strong> 46+</span>
+                <span><strong>Base URL:</strong> http://localhost:8080/api/v1</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="swagger-header">
+            <h2>Database Curanmor Online — Ditreskrimum Polda Kepulauan Riau</h2>
+            <p><strong>Deskripsi:</strong> API untuk dashboard web (input & pencarian data) dan integrasi chatbot WhatsApp AI. Seluruh response menggunakan amplop standar { success, data, error, meta }.</p>
+            <p><strong>Autentikasi:</strong> JWT (cookieAuth) | Bearer Token | API Key (X-API-Key)</p>
+        </div>
+
+        <!-- AUTHENTICATION -->
+        <div class="tag-group">
+            <div class="tag-title">🔐 Authentication (3 endpoints)</div>
+            <div class="section-grid">
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/auth/login</div>
+                    <div class="endpoint-description">Login dashboard (NRP + password)</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/auth/me</div>
+                    <div class="endpoint-description">Get current user info</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/auth/logout</div>
+                    <div class="endpoint-description">Logout (clear session)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LAPORAN POLISI -->
+        <div class="tag-group">
+            <div class="tag-title">📋 Laporan Polisi (6 endpoints)</div>
+            <div class="section-grid">
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/laporan</div>
+                    <div class="endpoint-description">Search laporan dengan filter & pagination</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}</div>
+                    <div class="endpoint-description">Get detail laporan (with embedded relations)</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/laporan</div>
+                    <div class="endpoint-description">Create laporan baru</div>
+                </div>
+                <div class="endpoint-card put">
+                    <span class="endpoint-method put">PUT</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}</div>
+                    <div class="endpoint-description">Update laporan (partial update)</div>
+                </div>
+                <div class="endpoint-card patch">
+                    <span class="endpoint-method patch">PATCH</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/status</div>
+                    <div class="endpoint-description">Update status laporan</div>
+                </div>
+                <div class="endpoint-card delete">
+                    <span class="endpoint-method delete">DELETE</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}</div>
+                    <div class="endpoint-description">Delete laporan (cascade)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KENDARAAN -->
+        <div class="tag-group">
+            <div class="tag-title">🚗 Kendaraan (5 endpoints)</div>
+            <div class="section-grid">
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/kendaraan</div>
+                    <div class="endpoint-description">List kendaraan per laporan</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/kendaraan</div>
+                    <div class="endpoint-description">Create kendaraan</div>
+                </div>
+                <div class="endpoint-card patch">
+                    <span class="endpoint-method patch">PATCH</span>
+                    <div class="endpoint-path">/api/v1/kendaraan/{id}/status</div>
+                    <div class="endpoint-description">Update kendaraan status</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/kendaraan/search</div>
+                    <div class="endpoint-description">Search kendaraan (no_polisi/VIN/mesin)</div>
+                </div>
+                <div class="endpoint-card delete">
+                    <span class="endpoint-method delete">DELETE</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/kendaraan/{id}</div>
+                    <div class="endpoint-description">Delete kendaraan</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PIHAK TERKAIT -->
+        <div class="tag-group">
+            <div class="tag-title">👤 Pihak Terkait (3 endpoints)</div>
+            <div class="section-grid">
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/pihak-terkait</div>
+                    <div class="endpoint-description">List pihak terkait</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/pihak-terkait</div>
+                    <div class="endpoint-description">Create pihak terkait (NIK encrypted)</div>
+                </div>
+                <div class="endpoint-card delete">
+                    <span class="endpoint-method delete">DELETE</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/pihak-terkait/{id}</div>
+                    <div class="endpoint-description">Delete pihak terkait</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BARANG BUKTI -->
+        <div class="tag-group">
+            <div class="tag-title">📦 Barang Bukti (3 endpoints)</div>
+            <div class="section-grid">
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/barang-bukti</div>
+                    <div class="endpoint-description">List barang bukti</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/barang-bukti</div>
+                    <div class="endpoint-description">Create barang bukti</div>
+                </div>
+                <div class="endpoint-card delete">
+                    <span class="endpoint-method delete">DELETE</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/barang-bukti/{id}</div>
+                    <div class="endpoint-description">Delete barang bukti</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DOKUMENTASI -->
+        <div class="tag-group">
+            <div class="tag-title">📸 Dokumentasi Pendukung (3 endpoints)</div>
+            <div class="section-grid">
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/dokumentasi</div>
+                    <div class="endpoint-description">List dokumentasi</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/dokumentasi</div>
+                    <div class="endpoint-description">Create dokumentasi (foto, video, dll)</div>
+                </div>
+                <div class="endpoint-card delete">
+                    <span class="endpoint-method delete">DELETE</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/dokumentasi/{id}</div>
+                    <div class="endpoint-description">Delete dokumentasi</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIWAYAT PENYIDIKAN -->
+        <div class="tag-group">
+            <div class="tag-title">📅 Riwayat Penyidikan (3 endpoints)</div>
+            <div class="section-grid">
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/riwayat-penyidikan</div>
+                    <div class="endpoint-description">List riwayat penyidikan</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/riwayat-penyidikan</div>
+                    <div class="endpoint-description">Create riwayat penyidikan</div>
+                </div>
+                <div class="endpoint-card delete">
+                    <span class="endpoint-method delete">DELETE</span>
+                    <div class="endpoint-path">/api/v1/laporan/{id}/riwayat-penyidikan/{id}</div>
+                    <div class="endpoint-description">Delete riwayat penyidikan</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="tag-group">
+            <div class="tag-title">📊 Dashboard Monitoring (4 endpoints)</div>
+            <div class="section-grid">
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/dashboard/monitoring</div>
+                    <div class="endpoint-description">Dashboard summary metrics</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/dashboard/tren-bulanan</div>
+                    <div class="endpoint-description">Monthly trend analysis</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/dashboard/kategori-kasus</div>
+                    <div class="endpoint-description">Case category breakdown</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/dashboard/peta-sebaran</div>
+                    <div class="endpoint-description">Crime incident map (GeoJSON)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WHATSAPP BRIDGE -->
+        <div class="tag-group">
+            <div class="tag-title">🤖 WhatsApp Bridge (6 endpoints - API Key Auth)</div>
+            <div class="section-grid">
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/wa/whitelist/check</div>
+                    <div class="endpoint-description">Whitelist check (X-API-Key auth)</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/wa/log-interaksi</div>
+                    <div class="endpoint-description">Log interaksi WhatsApp</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/wa/hasil-ocr</div>
+                    <div class="endpoint-description">Log OCR hasil ekstraksi</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/wa/search</div>
+                    <div class="endpoint-description">🔍 Main WA search endpoint</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/wa/respons</div>
+                    <div class="endpoint-description">Log AI response</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/wa/log-interaksi</div>
+                    <div class="endpoint-description">Audit log (scoped by satker)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN -->
+        <div class="tag-group">
+            <div class="tag-title">⚙️ System Admin (15+ endpoints)</div>
+            <div class="section-grid">
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/satuan-kerja</div>
+                    <div class="endpoint-description">List satuan kerja (hierarchy)</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/satuan-kerja</div>
+                    <div class="endpoint-description">Create satuan kerja</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/pengguna</div>
+                    <div class="endpoint-description">List users</div>
+                </div>
+                <div class="endpoint-card post">
+                    <span class="endpoint-method post">POST</span>
+                    <div class="endpoint-path">/api/v1/pengguna</div>
+                    <div class="endpoint-description">Create user (Super Admin only)</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/peran</div>
+                    <div class="endpoint-description">List roles (6 levels)</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/rbac/matriks</div>
+                    <div class="endpoint-description">RBAC permission matrix</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/audit-log</div>
+                    <div class="endpoint-description">Audit trail (50+ entries)</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/whitelist-whatsapp</div>
+                    <div class="endpoint-description">Manage WA whitelist</div>
+                </div>
+                <div class="endpoint-card get">
+                    <span class="endpoint-method get">GET</span>
+                    <div class="endpoint-path">/api/v1/api-keys</div>
+                    <div class="endpoint-description">Manage API keys</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>CURANMOR AI - Version 1.0.0</strong></p>
+            <p>Database Pencurian Kendaraan Bermotor | Ditreskrimum Polda Kepulauan Riau</p>
+            <p>OpenAPI Spec: <code>GET /openapi.yaml</code> | Status: <code>GET /health</code></p>
+            <p style="margin-top: 15px; color: #666;">✅ Production Ready | 46+ Endpoints | 100% Multi-tenant Isolated</p>
+        </div>
+    </div>
+</body>
+</html>

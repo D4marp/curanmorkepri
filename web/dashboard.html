@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Monitoring — CURANMOR AI</title>
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/vendor/leaflet/leaflet.css">
+</head>
+<body data-page="dashboard">
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="/assets/img/logo-kepri.png" alt="Polda Kepri">
+      <div class="brand-text">DATABASE CURANMOR ONLINE
+        <small>Ditreskrimum Polda Kepulauan Riau</small>
+      </div>
+    </div>
+    <div class="nav-group-label">Menu Utama</div>
+    <a class="nav-link" data-page="dashboard" data-module="dashboard_monitoring" href="/dashboard.html"><span class="icon">&#9673;</span> Dashboard Monitoring</a>
+    <a class="nav-link" data-page="kasus" data-module="pencarian_data" href="/kasus.html"><span class="icon">&#128269;</span> Data &amp; Pencarian Kasus</a>
+    <a class="nav-link" data-page="kasus-baru" data-module="kelola_data" href="/kasus-baru.html"><span class="icon">&#10133;</span> Input Laporan Baru</a>
+    <a class="nav-link" data-page="analitik" data-module="laporan_analitik" href="/laporan-analitik.html"><span class="icon">&#128202;</span> Laporan &amp; Analitik</a>
+    <div class="nav-group-label">Administrasi</div>
+    <a class="nav-link" data-page="pengguna" data-module="kelola_pengguna" href="/pengguna.html"><span class="icon">&#128100;</span> Kelola Pengguna</a>
+    <a class="nav-link" data-page="pengaturan" data-module="pengaturan_sistem" href="/pengaturan.html"><span class="icon">&#9881;</span> Pengaturan Sistem</a>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="name" id="sidebar-user-name">—</div>
+        <div class="role" id="sidebar-user-role">—</div>
+        <div class="satker" id="sidebar-user-satker">—</div>
+      </div>
+      <button class="btn btn-outline btn-logout" id="btn-logout">Keluar</button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <div class="topbar">
+      <div>
+        <h1>Dashboard Monitoring</h1>
+        <div class="sub">Ringkasan kasus curanmor &amp; sebaran lokasi TKP</div>
+      </div>
+      <button class="btn btn-outline" id="btn-toggle-sidebar" style="display:none">&#9776;</button>
+    </div>
+
+    <div class="content">
+      <div class="stat-grid" id="stat-grid">
+        <div class="stat-tile"><div class="label">Total Kasus</div><div class="value">—</div></div>
+        <div class="stat-tile accent-red"><div class="label">Belum Terungkap</div><div class="value">—</div></div>
+        <div class="stat-tile accent-green"><div class="label">Selesai / Terungkap</div><div class="value">—</div></div>
+        <div class="stat-tile accent-gold"><div class="label">Kendaraan Ditemukan</div><div class="value">—</div></div>
+        <div class="stat-tile accent-red"><div class="label">Kendaraan Belum Ditemukan</div><div class="value">—</div></div>
+      </div>
+
+      <div class="card">
+        <h2>Peta Sebaran Lokasi Kejadian <span class="hint">— titik merah: belum terungkap, hijau: sudah terungkap</span></h2>
+        <div class="toolbar">
+          <div class="field" style="margin:0"><label>Dari Tanggal</label><input type="date" id="peta-dari"></div>
+          <div class="field" style="margin:0"><label>Sampai Tanggal</label><input type="date" id="peta-sampai"></div>
+          <button class="btn btn-primary" id="btn-filter-peta" style="align-self:flex-end">Terapkan</button>
+          <button class="btn btn-outline" id="btn-reset-peta" style="align-self:flex-end">Reset</button>
+        </div>
+        <div id="map"></div>
+        <div class="map-legend">
+          <span><i class="dot red"></i> Belum terungkap</span>
+          <span><i class="dot green"></i> Sudah terungkap (Selesai)</span>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h2>Tren Kasus 6 Bulan Terakhir</h2>
+          <canvas id="chart-tren" height="140"></canvas>
+        </div>
+        <div class="card">
+          <h2>Kategori Kasus</h2>
+          <canvas id="chart-kategori" height="140"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/app.js"></script>
+<script src="/assets/vendor/leaflet/leaflet.js"></script>
+<script src="/assets/vendor/chartjs/chart.umd.js"></script>
+<script src="/assets/js/dashboard.js"></script>
+</body>
+</html>

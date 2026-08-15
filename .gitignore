@@ -1,0 +1,16 @@
+# Rahasia — jangan pernah commit
+.env
+*.pem
+*.key
+
+# Data runtime lokal
+/uploads/
+*.log
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# NOTE: folder vendor/ SENGAJA TIDAK di-ignore — dependensi Go di-vendor
+# secara sengaja agar `docker build` bisa berjalan tanpa akses jaringan.

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CURANMOR AI - Swagger API Documentation</title>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css" />
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        html {
+            overflow: -moz-scrollbars-vertical;
+            overflow-y: scroll;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background: #fafafa;
+        }
+        .topbar {
+            background-color: #1e1e1e;
+            padding: 10px 0;
+            color: white;
+        }
+        .topbar-inner {
+            max-width: 1460px;
+            margin: 0 auto;
+            padding: 10px 15px;
+        }
+        .topbar h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .topbar p {
+            margin: 5px 0 0 0;
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-inner">
+            <h1>🚔 CURANMOR AI - API Documentation</h1>
+            <p>Database Pencurian Kendaraan Bermotor | Ditreskrimum Polda Kepulauan Riau</p>
+        </div>
+    </div>
+    <div id="swagger-ui"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.min.js"></script>
+    <script>
+        window.onload = function() {
+            // Fetch OpenAPI spec from server
+            fetch('/openapi.yaml')
+                .then(response => response.text())
+                .then(yaml => {
+                    // Parse YAML (simple approach, for production use yaml parser)
+                    const ui = SwaggerUIBundle({
+                        url: '/openapi.yaml',
+                        dom_id: '#swagger-ui',
+                        presets: [
+                            SwaggerUIBundle.presets.apis,
+                            SwaggerUIBundle.SwaggerUIStandalonePreset
+                        ],
+                        plugins: [
+                            SwaggerUIBundle.plugins.DownloadUrl
+                        ],
+                        layout: "StandaloneLayout",
+                        deepLinking: true,
+                        persistAuthorization: true,
+                    })
+                    window.ui = ui
+                })
+                .catch(error => {
+                    console.error('Failed to load OpenAPI spec:', error);
+                    document.getElementById('swagger-ui').innerHTML = 
+                        '<h2 style="color: red; padding: 20px;">Error loading API documentation</h2>' +
+                        '<p style="padding: 20px;">Make sure the CURANMOR AI API server is running on http://localhost:8080</p>';
+                });
+        }
+    </script>
+</body>
+</html>

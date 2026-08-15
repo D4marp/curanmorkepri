@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Database Curanmor Online Ditreskrimum Polda Kepulauan Riau</title>
+<link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+<div class="login-shell">
+  <div class="login-card">
+    <div class="login-logos">
+      <img src="/assets/img/logo-reserse.png" alt="Lambang Reserse">
+      <img src="/assets/img/logo-kepri.png" alt="Lambang Polda Kepulauan Riau">
+    </div>
+    <h1>DATABASE CURANMOR ONLINE<br>DITRESKRIMUM POLDA KEPULAUAN RIAU</h1>
+    <div class="subtitle">Masuk menggunakan NRP &amp; kata sandi</div>
+
+    <div id="alert-box"></div>
+
+    <form id="login-form" method="post" action="#">
+      <div class="field">
+        <label for="nrp">NRP</label>
+        <input type="text" id="nrp" name="nrp" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="password">Kata Sandi</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary" id="btn-submit">Masuk</button>
+    </form>
+
+    <div class="login-footer">
+      Akses sistem hanya untuk personel Polda &amp; Polres/Polsek jajaran Kepulauan Riau yang berwenang.
+      Seluruh aktivitas tercatat pada audit trail.
+    </div>
+  </div>
+</div>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/login.js"></script>
+</body>
+</html>

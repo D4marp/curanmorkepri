@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data &amp; Pencarian Kasus — CURANMOR AI</title>
+<link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body data-page="kasus">
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="/assets/img/logo-kepri.png" alt="Polda Kepri">
+      <div class="brand-text">DATABASE CURANMOR ONLINE
+        <small>Ditreskrimum Polda Kepulauan Riau</small>
+      </div>
+    </div>
+    <div class="nav-group-label">Menu Utama</div>
+    <a class="nav-link" data-page="dashboard" data-module="dashboard_monitoring" href="/dashboard.html"><span class="icon">&#9673;</span> Dashboard Monitoring</a>
+    <a class="nav-link" data-page="kasus" data-module="pencarian_data" href="/kasus.html"><span class="icon">&#128269;</span> Data &amp; Pencarian Kasus</a>
+    <a class="nav-link" data-page="kasus-baru" data-module="kelola_data" href="/kasus-baru.html"><span class="icon">&#10133;</span> Input Laporan Baru</a>
+    <a class="nav-link" data-page="analitik" data-module="laporan_analitik" href="/laporan-analitik.html"><span class="icon">&#128202;</span> Laporan &amp; Analitik</a>
+    <div class="nav-group-label">Administrasi</div>
+    <a class="nav-link" data-page="pengguna" data-module="kelola_pengguna" href="/pengguna.html"><span class="icon">&#128100;</span> Kelola Pengguna</a>
+    <a class="nav-link" data-page="pengaturan" data-module="pengaturan_sistem" href="/pengaturan.html"><span class="icon">&#9881;</span> Pengaturan Sistem</a>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="name" id="sidebar-user-name">—</div>
+        <div class="role" id="sidebar-user-role">—</div>
+        <div class="satker" id="sidebar-user-satker">—</div>
+      </div>
+      <button class="btn btn-outline btn-logout" id="btn-logout">Keluar</button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <div class="topbar">
+      <div>
+        <h1>Data &amp; Pencarian Kasus</h1>
+        <div class="sub">Cari laporan curanmor berdasarkan wilayah, status, dan rentang waktu</div>
+      </div>
+      <a class="btn btn-gold" href="/kasus-baru.html" data-module="kelola_data">+ Laporan Baru</a>
+    </div>
+
+    <div class="content">
+      <div class="card">
+        <h2>Filter Pencarian</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label>Kata Kunci (No. LP / Alamat TKP)</label>
+            <input type="text" id="f-keyword" placeholder="mis. LP/0001 atau Batam Kota">
+          </div>
+          <div class="field">
+            <label>Satuan Kerja / Wilayah</label>
+            <select id="f-satker"><option value="">Semua wilayah dalam cakupan Anda</option></select>
+          </div>
+          <div class="field">
+            <label>Status Kasus</label>
+            <select id="f-status">
+              <option value="">Semua status</option>
+              <option value="LP">LP</option>
+              <option value="SP2HP">SP2HP</option>
+              <option value="DPO">DPO</option>
+              <option value="Selesai">Selesai</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Dari Tanggal Kejadian</label>
+            <input type="date" id="f-dari">
+          </div>
+          <div class="field">
+            <label>Sampai Tanggal Kejadian</label>
+            <input type="date" id="f-sampai">
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="btn btn-primary" id="btn-search">Cari</button>
+          <button class="btn btn-outline" id="btn-reset">Reset Filter</button>
+          <span class="helper-text" style="margin-left:auto" id="result-count"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>No. LP</th><th>Tanggal Kejadian</th><th>Satuan Kerja</th><th>Jenis Perkara</th><th>Status</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body"><tr><td colspan="6" class="empty-state">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/kasus.js"></script>
+</body>
+</html>

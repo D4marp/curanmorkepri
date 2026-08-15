@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detail Laporan — CURANMOR AI</title>
+<link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body data-page="kasus">
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="/assets/img/logo-kepri.png" alt="Polda Kepri">
+      <div class="brand-text">DATABASE CURANMOR ONLINE
+        <small>Ditreskrimum Polda Kepulauan Riau</small>
+      </div>
+    </div>
+    <div class="nav-group-label">Menu Utama</div>
+    <a class="nav-link" data-page="dashboard" data-module="dashboard_monitoring" href="/dashboard.html"><span class="icon">&#9673;</span> Dashboard Monitoring</a>
+    <a class="nav-link" data-page="kasus" data-module="pencarian_data" href="/kasus.html"><span class="icon">&#128269;</span> Data &amp; Pencarian Kasus</a>
+    <a class="nav-link" data-page="kasus-baru" data-module="kelola_data" href="/kasus-baru.html"><span class="icon">&#10133;</span> Input Laporan Baru</a>
+    <a class="nav-link" data-page="analitik" data-module="laporan_analitik" href="/laporan-analitik.html"><span class="icon">&#128202;</span> Laporan &amp; Analitik</a>
+    <div class="nav-group-label">Administrasi</div>
+    <a class="nav-link" data-page="pengguna" data-module="kelola_pengguna" href="/pengguna.html"><span class="icon">&#128100;</span> Kelola Pengguna</a>
+    <a class="nav-link" data-page="pengaturan" data-module="pengaturan_sistem" href="/pengaturan.html"><span class="icon">&#9881;</span> Pengaturan Sistem</a>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="name" id="sidebar-user-name">—</div>
+        <div class="role" id="sidebar-user-role">—</div>
+        <div class="satker" id="sidebar-user-satker">—</div>
+      </div>
+      <button class="btn btn-outline btn-logout" id="btn-logout">Keluar</button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <div class="topbar">
+      <div>
+        <h1 id="title-no-lp">Detail Laporan</h1>
+        <div class="sub"><a href="/kasus.html">&larr; Kembali ke daftar kasus</a></div>
+      </div>
+      <div id="status-actions"></div>
+    </div>
+
+    <div class="content" id="content-root">
+      <div class="empty-state">Memuat data laporan...</div>
+    </div>
+  </div>
+</div>
+
+<template id="tpl-content">
+  <div class="card detail-section">
+    <div class="kv-grid">
+      <div><div class="kv-label">No. LP</div><div class="kv-value" data-f="no_lp"></div></div>
+      <div><div class="kv-label">Status Kasus</div><div class="kv-value" data-f="status_kasus"></div></div>
+      <div><div class="kv-label">Jenis Perkara</div><div class="kv-value" data-f="jenis_perkara"></div></div>
+      <div><div class="kv-label">Satuan Kerja</div><div class="kv-value" data-f="satker_nama"></div></div>
+      <div><div class="kv-label">Tanggal LP</div><div class="kv-value" data-f="tanggal_lp"></div></div>
+      <div><div class="kv-label">Tanggal Kejadian</div><div class="kv-value" data-f="tanggal_kejadian"></div></div>
+      <div><div class="kv-label">Penyidik</div><div class="kv-value" data-f="penyidik_nama"></div></div>
+      <div><div class="kv-label">Alamat TKP</div><div class="kv-value" data-f="tkp_alamat"></div></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab-btn active" data-tab="kendaraan">Kendaraan</div>
+    <div class="tab-btn" data-tab="pihak">Pihak Terkait</div>
+    <div class="tab-btn" data-tab="bb">Barang Bukti</div>
+    <div class="tab-btn" data-tab="dok">Dokumentasi</div>
+    <div class="tab-btn" data-tab="penyidikan">Riwayat Penyidikan</div>
+    <div class="tab-btn" data-tab="status">Riwayat Status</div>
+  </div>
+
+  <div class="tab-panel active" data-panel="kendaraan">
+    <div class="card">
+      <h2>Data Kendaraan</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>No. Polisi</th><th>No. Rangka</th><th>No. Mesin</th><th>Merk/Tipe</th><th>Status</th><th></th></tr></thead>
+        <tbody id="tbl-kendaraan"></tbody>
+      </table></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px" id="btn-add-kendaraan" data-module="kelola_data">+ Tambah Kendaraan</button>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-panel="pihak">
+    <div class="card">
+      <h2>Pihak Terkait</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Jenis</th><th>Nama</th><th>NIK</th><th>No. Telp</th><th>Alamat</th><th></th></tr></thead>
+        <tbody id="tbl-pihak"></tbody>
+      </table></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px" id="btn-add-pihak" data-module="kelola_data">+ Tambah Pihak Terkait</button>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-panel="bb">
+    <div class="card">
+      <h2>Barang Bukti</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Jenis</th><th>No. Registrasi</th><th>Lokasi Simpan</th><th>Tgl Diamankan</th><th></th></tr></thead>
+        <tbody id="tbl-bb"></tbody>
+      </table></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px" id="btn-add-bb" data-module="kelola_data">+ Tambah Barang Bukti</button>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-panel="dok">
+    <div class="card">
+      <h2>Dokumentasi Pendukung</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Jenis Dokumen</th><th>Berkas</th><th>Diunggah</th><th></th></tr></thead>
+        <tbody id="tbl-dok"></tbody>
+      </table></div>
+      <div class="toolbar" style="margin-top:12px" data-module="kelola_data">
+        <select id="dok-jenis">
+          <option>STNK</option><option>BPKB</option><option>Foto TKP</option><option>Foto Rangka</option><option>Foto Mesin</option><option>Lainnya</option>
+        </select>
+        <input type="file" id="dok-file">
+        <button class="btn btn-outline btn-sm" id="btn-add-dok">Unggah</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-panel="penyidikan">
+    <div class="card">
+      <h2>Riwayat Penyidikan</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Tanggal</th><th>Kegiatan</th><th>Catatan</th><th></th></tr></thead>
+        <tbody id="tbl-penyidikan"></tbody>
+      </table></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px" id="btn-add-penyidikan" data-module="kelola_data">+ Tambah Jurnal Penyidikan</button>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-panel="status">
+    <div class="card">
+      <h2>Riwayat Perubahan Status</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Tanggal</th><th>Dari</th><th>Ke</th><th>Keterangan</th><th>Oleh</th></tr></thead>
+        <tbody id="tbl-status"></tbody>
+      </table></div>
+    </div>
+  </div>
+</template>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/kasus-detail.js"></script>
+</body>
+</html>
