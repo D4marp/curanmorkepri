@@ -5,7 +5,7 @@
 # (distroless-style, non-root) berisi binari + migrations + scripts + docs + web.
 # =============================================================================
 
-FROM golang:1.24-alpine AS build
+FROM golang:1.25-alpine AS build
 WORKDIR /src
 
 # Dependensi sudah di-vendor (folder vendor/) sehingga build ini TIDAK

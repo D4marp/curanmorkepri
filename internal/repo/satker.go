@@ -33,6 +33,19 @@ func GetSatuanKerja(db *sql.DB, id int64) (*models.SatuanKerja, error) {
 	return &s, nil
 }
 
+// GetSatuanKerjaByKode dipakai oleh import massal (Excel) — operator mengisi
+// kode_satker yang mudah dibaca/dihafal di kolom spreadsheet, bukan id
+// internal yang tidak mereka ketahui.
+func GetSatuanKerjaByKode(db *sql.DB, kode string) (*models.SatuanKerja, error) {
+	var s models.SatuanKerja
+	err := db.QueryRow(`SELECT id, kode_satker, nama_satker, jenis_satker, induk_id, COALESCE(wilayah,''), COALESCE(alamat,''), created_at FROM satuan_kerja WHERE kode_satker = $1`, kode).
+		Scan(&s.ID, &s.KodeSatker, &s.NamaSatker, &s.JenisSatker, &s.IndukID, &s.Wilayah, &s.Alamat, &s.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &s, nil
+}
+
 func CreateSatuanKerja(db *sql.DB, s *models.SatuanKerja) (int64, error) {
 	var id int64
 	err := db.QueryRow(

@@ -63,6 +63,7 @@ func main() {
 	monitoringH := &handlers.MonitoringHandler{DB: database}
 	waH := &handlers.WaHandler{DB: database}
 	uploadH := &handlers.UploadHandler{UploadDir: cfg.UploadDir, MaxSizeMB: cfg.MaxUploadSizeMB, PublicPath: "/uploads"}
+	bulkImportH := &handlers.BulkImportHandler{DB: database, Crypto: crypto, MaxMB: cfg.MaxUploadSizeMB}
 
 	loginLimiter := middleware.NewRateLimiter(10, 5*time.Minute)
 
@@ -106,6 +107,8 @@ func main() {
 	data.Put("/api/v1/laporan/{id}", laporanH.Update)
 	data.Patch("/api/v1/laporan/{id}/status", laporanH.UpdateStatus)
 	data.Delete("/api/v1/laporan/{id}", laporanH.Delete)
+	data.Get("/api/v1/laporan/bulk-import/template", bulkImportH.DownloadTemplate)
+	data.Post("/api/v1/laporan/bulk-import", bulkImportH.Import)
 
 	data.Post("/api/v1/laporan/{id}/kendaraan", kendaraanH.Create)
 	data.Put("/api/v1/kendaraan/{id}", kendaraanH.Update)
