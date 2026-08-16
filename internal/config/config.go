@@ -3,6 +3,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -64,6 +65,36 @@ func envInt64(key string, def int64) int64 {
 	return n
 }
 
+// resolveDatabaseURL menentukan connection string Postgres yang dipakai.
+// Prioritas:
+//  1. DATABASE_URL apa adanya, bila diisi (docker-compose lokal & override manual).
+//  2. Dirakit dari DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME (+DB_SSLMODE opsional)
+//     — dipakai saat platform hosting cuma kasih field terpisah (Host/Port/
+//     Username/Password/Database Name), bukan satu string gabungan. Dirakit
+//     lewat net/url.URL, BUKAN concat string manual, supaya password yang
+//     mengandung karakter spesial (@, :, /, dst — umum pada password random
+//     yang di-generate provider DB terkelola) tidak merusak format URL.
+func resolveDatabaseURL() string {
+	if v := os.Getenv("DATABASE_URL"); v != "" {
+		return v
+	}
+	host := mustEnv("DB_HOST")
+	port := envOr("DB_PORT", "5432")
+	user := mustEnv("DB_USER")
+	password := mustEnv("DB_PASSWORD")
+	dbname := mustEnv("DB_NAME")
+	sslmode := envOr("DB_SSLMODE", "require")
+
+	u := &url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(user, password),
+		Host:     host + ":" + port,
+		Path:     "/" + dbname,
+		RawQuery: "sslmode=" + url.QueryEscape(sslmode),
+	}
+	return u.String()
+}
+
 // Load membaca konfigurasi dari environment variable.
 // Variabel wajib (tanpa default aman) akan menyebabkan panic saat start-up
 // agar kesalahan konfigurasi keamanan terdeteksi lebih awal, bukan diam-diam
@@ -72,7 +103,7 @@ func Load() *Config {
 	cfg := &Config{
 		AppEnv:          envOr("APP_ENV", "development"),
 		HTTPPort:        envOr("HTTP_PORT", "8080"),
-		DatabaseURL:     mustEnv("DATABASE_URL"),
+		DatabaseURL:     resolveDatabaseURL(),
 		JWTSecret:       mustEnv("JWT_SECRET"),
 		JWTIssuer:       envOr("JWT_ISSUER", "curanmor-ai.polda-kepri.go.id"),
 		AccessTokenTTL:  time.Duration(envInt64("ACCESS_TOKEN_TTL_MINUTES", 60)) * time.Minute,
