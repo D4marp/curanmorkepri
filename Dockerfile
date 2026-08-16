@@ -43,6 +43,6 @@ ENV MIGRATIONS_DIR=/app/migrations \
     HTTP_PORT=8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD wget -qO- http://127.0.0.1:8080/index.html >/dev/null 2>&1 || exit 1
+    CMD wget -qO- http://127.0.0.1:8080/healthz >/dev/null 2>&1 || exit 1
 
 ENTRYPOINT ["/app/curanmor-api"]

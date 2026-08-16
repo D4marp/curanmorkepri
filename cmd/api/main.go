@@ -76,6 +76,20 @@ func main() {
 	loginHandler := loginLimiter.Middleware()(http.HandlerFunc(authH.Login))
 	pub.Handle("POST /api/v1/auth/login", loginHandler)
 
+	// GET /healthz — dipakai Docker HEALTHCHECK & orchestrator lain. Sengaja
+	// TIDAK memakai "/index.html" (net/http.FileServer selalu redirect 301
+	// permintaan persis ke nama file index ke "./", yang gagal di-follow
+	// oleh wget BusyBox pada image Alpine — menyebabkan container ditandai
+	// unhealthy walau API sebenarnya sehat). Endpoint ini juga mem-ping DB
+	// supaya masalah koneksi database ikut terdeteksi sebagai unhealthy.
+	pub.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		if err := database.Ping(); err != nil {
+			httpx.Err(w, http.StatusServiceUnavailable, "unhealthy", "Database tidak dapat dijangkau")
+			return
+		}
+		httpx.OK(w, map[string]string{"status": "ok"})
+	})
+
 	// ---------- Sesi wajib, tanpa gate modul spesifik ----------
 	authOnly := r.Group("", authMw)
 	authOnly.Post("/api/v1/auth/logout", authH.Logout)
